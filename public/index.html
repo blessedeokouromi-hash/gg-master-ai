@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07110e">
+<title>GG Master AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07110e;color:#f1f5f3;font-family:Arial,sans-serif}
+header{padding:22px 17px;background:#0c1914;border-bottom:1px solid #20372b}
+.logo{font-size:25px;font-weight:900;color:#45e18a}
+.sub{font-size:12px;color:#91a69a;margin-top:6px}
+main{padding:18px;max-width:850px;margin:auto}
+h2{font-size:19px;margin:22px 0 12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:#102019;border:1px solid #243c2e;border-radius:13px;padding:17px}
+.number{font-size:29px;font-weight:bold;color:#45e18a}
+.small{font-size:12px;color:#9aafa3;margin-top:7px}
+button{border:0;border-radius:9px;background:#35d77d;color:#06130b;font-weight:bold;padding:13px 17px;cursor:pointer}
+button:disabled{opacity:.5}
+.controls{display:flex;gap:9px;flex-wrap:wrap}
+input{background:#102019;border:1px solid #34513e;color:white;padding:12px;border-radius:9px}
+.card{background:#102019;border:1px solid #294334;border-radius:12px;padding:15px;margin:11px 0}
+.teams{font-weight:bold;font-size:15px;margin-bottom:12px}
+.tag{display:inline-block;background:#173c29;color:#55e694;padding:6px 10px;border-radius:6px;font-size:12px}
+.muted{color:#9aafa3;font-size:12px;line-height:1.6}
+.status{color:#f1c76d;font-size:12px;margin-top:10px}
+footer{text-align:center;color:#71867a;font-size:11px;padding:30px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">⚽ GG MASTER AI</div>
+ <div class="sub">FOOTBALL BOTH TEAMS TO SCORE ANALYSIS</div>
+</header>
+
+<main>
+ <h2>Today's Dashboard</h2>
+ <div class="stats">
+  <div class="panel">
+   <div class="number" id="fixtureCount">0</div>
+   <div class="small">Matches found</div>
+  </div>
+  <div class="panel">
+   <div class="number" id="predictionCount">0</div>
+   <div class="small">Qualified GG YES predictions</div>
+  </div>
+  <div class="panel">
+   <div class="number">50+</div>
+   <div class="small">Daily prediction target</div>
+  </div>
+  <div class="panel">
+   <div class="number" id="accuracy">--</div>
+   <div class="small">Verified historical accuracy</div>
+  </div>
+ </div>
+
+ <h2>Find GG YES Matches</h2>
+ <div class="panel">
+  <p class="muted">Choose a date to retrieve football fixtures for analysis.</p>
+  <div class="controls">
+   <input type="date" id="matchDate">
+   <button id="analyzeBtn" onclick="loadFixtures()">Analyze Matches</button>
+  </div>
+  <p class="muted" id="message">Ready to connect to football data.</p>
+ </div>
+
+ <h2>Match Analysis</h2>
+ <div id="results">
+  <div class="panel muted">
+   Your match analysis will appear here after retrieving fixtures and connecting the statistical prediction engine.
+  </div>
+ </div>
+
+ <h2>How GG Master AI Works</h2>
+ <div class="panel muted">
+  ✓ Recent team scoring form<br><br>
+  ✓ Home and away goal records<br><br>
+  ✓ Goals scored and conceded<br><br>
+  ✓ Head-to-head statistics<br><br>
+  ✓ Both Teams To Score probability<br><br>
+  ✓ Historical prediction tracking
+ </div>
+</main>
+
+<footer>GG MASTER AI © 2026 | Statistical Football Analysis</footer>
+
+<script>
+const dateInput=document.getElementById("matchDate");
+dateInput.value=new Date().toLocaleDateString("en-CA");
+
+async function loadFixtures(){
+ const btn=document.getElementById("analyzeBtn");
+ const message=document.getElementById("message");
+ const results=document.getElementById("results");
+ const date=dateInput.value;
+
+ if(!date){message.textContent="Select a match date.";return;}
+
+ btn.disabled=true;
+ message.textContent="Retrieving football fixtures...";
+ results.innerHTML="";
+ document.getElementById("fixtureCount").textContent="...";
+ document.getElementById("predictionCount").textContent="0";
+
+ try{
+  const response=await fetch("/api/fixtures?date="+encodeURIComponent(date));
+  const data=await response.json();
+
+  if(!response.ok) throw new Error(data.error||"Unable to load fixtures.");
+
+  const fixtures=data.fixtures||[];
+  document.getElementById("fixtureCount").textContent=fixtures.length;
+
+  if(!fixtures.length){
+   results.innerHTML='<div class="panel muted">No fixtures were returned for this date.</div>';
+  }else{
+   fixtures.forEach(match=>{
+    const card=document.createElement("div");
+    card.className="card";
+
+    const teams=document.createElement("div");
+    teams.className="teams";
+    teams.textContent=match.teams.home.name+" vs "+match.teams.away.name;
+
+    const league=document.createElement("div");
+    league.className="muted";
+    league.textContent=match.league.name+" · "+match.league.country;
+
+    const tag=document.createElement("span");
+    tag.className="tag";
+    tag.textContent="GG YES analysis pending";
+
+    const status=document.createElement("div");
+    status.className="status";
+    status.textContent="Awaiting historical team statistics.";
+
+    card.append(teams,league,document.createElement("br"),tag,status);
+    results.appendChild(card);
+   });
+  }
+
+  message.textContent="Successfully retrieved "+fixtures.length+" fixtures. Full statistical analysis will be connected next.";
+ }catch(error){
+  message.textContent="Error: "+error.message;
+  results.innerHTML='<div class="panel muted">Could not retrieve fixtures. Check your server and API configuration.</div>';
+ }finally{
+  btn.disabled=false;
+ }
+}
+</script>
+</body>
+  </html>
+  
